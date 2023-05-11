@@ -188,12 +188,9 @@ for i in range(len(chord_names_test)):
 # Add the missing chord names to the testing data with their corresponding class indices
 
 print(chord_to_idx)
-# Create PyTorch tensor from all_chords_train_encoded with desired data type
+# Create PyTorch tensor
 
-# Repeat the same steps for all_chords_test
-# Assuming all_chords_test is a numpy array of type object with strings as elements
-# Convert strings to numerical values or codes, e.g., using label encoding or one-hot encoding
-# Example using label encoding
+# Convert strings to numerical values or code
 import torch.nn as nn
 
 import torch
@@ -262,7 +259,6 @@ test_dataset = ChordDataset(spectrograms_test, chord_names_test, chord_durations
 import torch
 from torch.nn.utils.rnn import pad_sequence
 
-# Import necessary libraries
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -271,7 +267,7 @@ import numpy as np
 import torch.nn.functional as F
 
 
-# Define your CNN-LSTM model
+# The model
 class CNNLSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(CNNLSTMModel, self).__init__()
@@ -307,21 +303,18 @@ class CNNLSTMModel(nn.Module):
         return chords_output, durations_output
 
 
-# Define your dataset class
-# Create data loaders for training and testing
 batch_size = 32
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-# Instantiate your model with appropriate input size, hidden size, num layers, and num classes
 input_size = spectrograms_train.shape[3]
 hidden_size = 256
 num_layers = 2
 
-num_classes = 17 # or chord_durations_train.shape[1] as both have the same number of classes
+num_classes = 17
 model = CNNLSTMModel(input_size, hidden_size, num_layers, num_classes)
 
-# Define loss functions for chords and durations
+# Define loss function
 
 
 criterion_chords = nn.CrossEntropyLoss(ignore_index=0)
@@ -350,16 +343,6 @@ def decode_chord_key(Chords):
                     break
     return result
 
-# specify the number of classes
-# num_classes = 4
-
-# create a tensor of weights for the loss function
-# weights = torch.ones(num_classes)
-
-# create the loss function with weights
-# criterion_duration = nn.CrossEntropyLoss()
-
-# Define optimizer
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=.8)
 
 # Train the model
@@ -375,10 +358,8 @@ for epoch in range(num_epochs):
 
         # Compute loss, ignoring padded val
 
-        # Convert remapped_chord_name labels to one-hot tensor
 
 
-        # Initialize a tensor for predicted values with the same shape as the target tensor
 
         pad_size = chord_name.size(1) - chords_output.size(1)
         chords_output = F.pad(chords_output, (0, 0, 0, pad_size), "constant", 0)
@@ -401,49 +382,7 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         print(f'Epoch [{epoch + 1}/{num_epochs}], Batch [{batch_idx + 1}/{len(train_loader)}], Loss: {loss.item()}')
-  # Load the saved weights into the model
 
-
-with torch.no_grad():
-    total = len(chord_name[0])
-    correct = 0
-    total_no_zeros = 0
-    correct_no_zeros = 0
-    for batch_idx, (spectrogram, chord_name, chord_duration) in enumerate(test_loader):
-
-        spectrogram = spectrogram.float()
-
-        # calculate outputs by running images through the network
-        chord_name_output, chord_duration_output = model(spectrogram)
-        # the class with the highest energy is what we choose as prediction
-        chord_name_output = chord_name_output.transpose(0, 1)
-
-        predicted = chord_name_output[0]
-        predicted = predicted[1]
-        output = chord_name_output.argmax(dim=2)
-        i=0
-        chord = chord_name[1]
-        for int in output[1]:
-            if(i<len(chord)-1):
-                print(int)
-                print(chord[i])
-                print(" ")
-                if int == chord[i]:
-                    correct+=1
-                if(int.item()!=0 and chord[i].item()!=0):
-                    if int == chord[i]:
-                        correct_no_zeros+=1
-                    total_no_zeros+=1
-
-            i+=1
-
-
-
-
-output = chords = chordino.extract('Jazz_Standards_Data/Wav_Files/26-2.wav')
-
-print(f'Accuracy of the network on the test set: {100 * correct / total} %')
-print(100*correct_no_zeros/total_no_zeros)
 
 
 
